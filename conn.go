@@ -1,12 +1,15 @@
 package oao
 
 import (
+	"bytes"
 	"context"
 	"io"
 	"net"
 )
 
 var Prefix byte = '+'
+var Suffix byte = '\n'
+var SuffixB []byte = []byte{Suffix}
 var DefaultFmsg = func(_ []byte) {}
 
 type Conn struct {
@@ -21,8 +24,22 @@ func (c *Conn) SentMsg(b []byte) error {
 	if c.And == nil {
 		return net.ErrClosed
 	}
-	_, err := c.And.Write(append([]byte{Prefix}, b...))
-	return err
+	w := c.And.GetWriter()
+	if w == nil {
+		return io.EOF
+	}
+
+	b2 := bytes.NewBuffer(nil)
+	b2.WriteByte(Prefix)
+	b2.Write(b)
+	if !bytes.HasSuffix(b, SuffixB) {
+		b2.WriteByte(Suffix)
+	}
+	_, err := w.Write(b2.Bytes())
+	if err != nil {
+		return err
+	}
+	return w.Flush()
 }
 
 func (c *Conn) RecMsg(ctx context.Context, f func(b []byte)) error {
