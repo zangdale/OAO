@@ -5,6 +5,7 @@ import (
 )
 
 func Child() (and *And, err error) {
+	and = new(And)
 	// out = bufio.NewWriter(os.Stdout)
 	// input := bufio.NewReader(os.Stdin)
 	and.stdin = os.Stdout

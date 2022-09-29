@@ -5,6 +5,7 @@ import (
 )
 
 func Parent(cmd *exec.Cmd) (and *And, err error) {
+	and = new(And)
 	and.stdin, err = cmd.StdinPipe()
 	if err != nil {
 		return
